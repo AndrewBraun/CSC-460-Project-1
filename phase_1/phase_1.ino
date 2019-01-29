@@ -43,7 +43,6 @@ void Joystick_update(Joystick_t& joy)
 Joystick_t joystick;
 
 void setup() {
-  Serial.begin(9600);
   
   Joystick_init(joystick, A0, A1);
 }
