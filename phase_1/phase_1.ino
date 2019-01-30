@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-/// JOYSTICK CODE
+///// JOYSTICK CODE
 const float k_joystickAlpha = 0.2;
 
 struct Joystick_t
@@ -57,10 +57,13 @@ bool Joystick_isInDeadband(struct Joystick_t joy, char axis)
     return abs(joy.posY) < joy.deadband;
 }
 
-/// LCD Code
+///// LCD Code
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
+/*
+ * Initalize the LCD
+ */
 void lcd_setup() {
   lcd.begin(20,4);
   lcd.backlight();
@@ -74,10 +77,13 @@ void lcd_setup() {
   lcd.print("Stick y axis:");
 }
 
-void write_to_lcd(int light_resistance, int joystick_x_value, int joystick_y_value) {
+/*
+ * Write the light resistor value, the joystick's x postion, and the joystick's y position to the LCD
+ */
+void write_to_lcd(int light_resistor, int joystick_x_value, int joystick_y_value) {
 
   lcd.setCursor(14,0);
-  lcd.print(light_resistance);
+  lcd.print(light_resistor);
 
   lcd.setCursor(13,1);
   lcd.print(joystick_x_value);
@@ -86,7 +92,7 @@ void write_to_lcd(int light_resistance, int joystick_x_value, int joystick_y_val
   lcd.print(joystick_y_value);
 }
 
-/// SERVO CODE
+///// SERVO CODE
 
 const unsigned int k_minServoPosMs = 400;
 const unsigned int k_maxServoPosMs = 1600;
@@ -114,7 +120,7 @@ void Servo_updateposms(struct Servo_t& servo, unsigned int ms)
   servo.posMs = ms;
 }
 
-/// MAIN CODE
+///// MAIN CODE
 
 Servo_t pan, tilt;
 Joystick_t joystick;
