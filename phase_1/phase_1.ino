@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-///// JOYSTICK CODE
+///////////// JOYSTICK CODE /////////////
 const float k_joystickAlpha = 0.2;
 
 struct Joystick_t
@@ -45,8 +45,8 @@ void Joystick_update(struct Joystick_t* joy)
   joy->posY = (1 - k_joystickAlpha) * analogRead(joy->pinY) + k_joystickAlpha * joy->posY;
 
   // Map to range [-512, 512]
-  joy->posX += joy->centerOffset - 512;
-  joy->posY += joy->centerOffset - 512;
+//  joy->posX += joy->centerOffset - 512;
+//  joy->posY += joy->centerOffset - 512;
   //Serial.println(joy->posX);
   //Serial.println(joy->posY);
 }
@@ -59,7 +59,7 @@ bool Joystick_isInDeadband(struct Joystick_t* joy, char axis)
     return abs(joy->posY) < joy->deadband;
 }
 
-///// LCD Code
+///////////// LCD Code /////////////
 
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
 
@@ -119,7 +119,7 @@ void printInt(int integer) {
   }
 }
 
-///// SERVO CODE
+///////////// SERVO CODE /////////////
 
 //const unsigned int k_minServoPosMs = 400;
 //const unsigned int k_maxServoPosMs = 1600;
@@ -150,10 +150,10 @@ void Servo_init(struct Servo_t* servo, int ctrlPin)
 //  servo.posMs = ms;
 //}
 
-///// BUTTON/LASER CODE
+///////////// BUTTON/LASER CODE /////////////
 
-int joystick_button_pin = LED_BUILTIN; // pin of joystick button
-int laserPin = 9; // pin of laser
+int joystick_button_pin = 52; // pin of joystick button
+int laserPin = LED_BUILTIN; // pin of laser
 bool laser_ON = false; // current value of laser
 int previous_joystick_button_value = 1; // previous value of the joystick button
 
@@ -168,7 +168,7 @@ void toggle_laser() {
   }
 }
 
-///// MAIN CODE
+///////////// MAIN CODE /////////////
 
 struct Servo_t pan, tilt;
 struct Joystick_t joystick;
@@ -179,9 +179,9 @@ int photoresistor = A15; // pin of photoresistor
 
 void setup() {
   
-  Servo_init(&tilt, 3);
-  Servo_init(&pan, 2);
-  delay(300); //Give time for servos to go to positions
+//  Servo_init(&tilt, 3);
+//  Servo_init(&pan, 2);
+//  delay(300); //Give time for servos to go to positions
   
   Joystick_init(&joystick, A0, A1);
 
