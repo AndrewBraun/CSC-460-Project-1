@@ -1,9 +1,10 @@
+// LCD libraries and code from http://arduinoinfo.mywikis.net/wiki/LCD-Blue-I2C
+
 #include <Servo.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
-/**
- * Joystick module.
- */
-
+/// JOYSTICK CODE
 const float k_joystickAlpha = 0.2;
 
 struct Joystick_t
@@ -56,9 +57,36 @@ bool Joystick_isInDeadband(struct Joystick_t joy, char axis)
     return abs(joy.posY) < joy.deadband;
 }
 
-/**
- * Servo module
- */
+/// LCD Code
+
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+
+void lcd_setup() {
+  lcd.begin(20,4);
+  lcd.backlight();
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Photoresistor:");
+  lcd.setCursor(0,1);
+  lcd.print("Stick x axis:");
+  lcd.setCursor(0,2);
+  lcd.print("Stick y axis:");
+}
+
+void write_to_lcd(int light_resistance, int joystick_x_value, int joystick_y_value) {
+
+  lcd.setCursor(14,0);
+  lcd.print(light_resistance);
+
+  lcd.setCursor(13,1);
+  lcd.print(joystick_x_value);
+
+  lcd.setCursor(13,2);
+  lcd.print(joystick_y_value);
+}
+
+/// SERVO CODE
 
 const unsigned int k_minServoPosMs = 400;
 const unsigned int k_maxServoPosMs = 1600;
@@ -86,34 +114,45 @@ void Servo_updateposms(struct Servo_t& servo, unsigned int ms)
   servo.posMs = ms;
 }
 
-/**
- * Main code.
- */
+/// MAIN CODE
 
 Servo_t pan, tilt;
 Joystick_t joystick;
 
 const unsigned int k_maxServoSpeed = 10; // microseconds/s
 
+int photoresistor = A15;
+
 void setup() {
+  
   Servo_init(tilt, 3);
+  Servo_init(pan, 2);
   Joystick_init(joystick, A0, A1);
+
   Serial.begin(9600);
+
+  lcd_setup();
+
+  pinMode(photoresistor, INPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
   Joystick_update(joystick);
 
-  do
-  {
-    // Skip updating servo if in deadband
-    if (Joystick_isInDeadband(joystick, 'y'))
-      break;
-    
+  if (!Joystick_isInDeadband(joystick, 'y')){
     int nextTiltPos = tilt.posMs + (joystick.posY / 512.0f) * k_maxServoSpeed;
     Servo_updateposms(tilt, nextTiltPos);
-    Serial.println("Servo: " + (String) tilt.posMs);
+    //Serial.println("Servo: " + (String) tilt.posMs);
   }
-  while (0);
+
+  if (!Joystick_isInDeadband(joystick, 'x')){
+    int nextPanPos = pan.posMs + (joystick.posX / 512.0f) * k_maxServoSpeed;
+    Servo_updateposms(pan, nextPanPos);
+    //Serial.println("Servo: " + (String) pan.posMs);
+  }
+
+  int photoresistor_value = analogRead(photoresistor);
+
+  write_to_lcd(photoresistor_value, joystick.posX, joystick.posY);
 }
