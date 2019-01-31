@@ -74,9 +74,9 @@ void lcd_setup() {
   lcd.setCursor(0,0);
   lcd.print("Photoresistor:");
   lcd.setCursor(0,1);
-  lcd.print("Stick x axis:");
+  lcd.print("Joystick x axis:");
   lcd.setCursor(0,2);
-  lcd.print("Stick y axis:");
+  lcd.print("Joystick y axis:");
   lcd.setCursor(0,3);
   lcd.print("Joystick button:");
 }
@@ -93,10 +93,10 @@ void write_to_lcd(int light_resistor, int joystick_x_value, int joystick_y_value
   lcd.setCursor(14,0);
   printInt(light_resistor);
   
-  lcd.setCursor(13,1);
+  lcd.setCursor(16,1);
   printInt(joystick_x_value);
 
-  lcd.setCursor(13,2);
+  lcd.setCursor(16,2);
   printInt(joystick_y_value);
 
   lcd.setCursor(16,3);
@@ -179,9 +179,9 @@ int photoresistor = A15; // pin of photoresistor
 
 void setup() {
   
-//  Servo_init(&tilt, 3);
-//  Servo_init(&pan, 2);
-//  delay(300); //Give time for servos to go to positions
+  Servo_init(&tilt, 8);
+  Servo_init(&pan, 9);
+  //delay(300); //Give time for servos to go to positions
   
   Joystick_init(&joystick, A0, A1);
 
