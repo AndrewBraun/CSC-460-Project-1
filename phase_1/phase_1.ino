@@ -14,12 +14,6 @@ struct Joystick_t
 
   int posX;
   int posY;
-
-  // Some joysticks are offset from the center. Add this value to
-  // compensate.
-  int centerOffset = 137;
-
-  int deadband = 50;
 };
 
 /**
@@ -43,20 +37,6 @@ void Joystick_update(struct Joystick_t* joy)
 {
   joy->posX = (1 - k_joystickAlpha) * analogRead(joy->pinX) + k_joystickAlpha * joy->posX;
   joy->posY = (1 - k_joystickAlpha) * analogRead(joy->pinY) + k_joystickAlpha * joy->posY;
-
-  // Map to range [-512, 512]
-//  joy->posX += joy->centerOffset - 512;
-//  joy->posY += joy->centerOffset - 512;
-  //Serial.println(joy->posX);
-  //Serial.println(joy->posY);
-}
-
-bool Joystick_isInDeadband(struct Joystick_t* joy, char axis)
-{
-  if (axis == 'x')
-    return abs(joy->posX) < joy->deadband;
-  if (axis == 'y')
-    return abs(joy->posY) < joy->deadband;
 }
 
 ///////////// LCD Code /////////////
@@ -121,15 +101,11 @@ void printInt(int integer) {
 
 ///////////// SERVO CODE /////////////
 
-//const unsigned int k_minServoPosMs = 400;
-//const unsigned int k_maxServoPosMs = 1600;
-
 struct Servo_t {
   int ctrlPin;
   Servo ctrl;
 
   int position;
-//  unsigned int posMs = 1000;
 };
 
 void Servo_init(struct Servo_t* servo, int ctrlPin)
@@ -140,15 +116,6 @@ void Servo_init(struct Servo_t* servo, int ctrlPin)
   servo->position = 90;
   servo->ctrl.write(90);
 }
-
-//void Servo_updateposms(struct Servo_t* servo, unsigned int ms)
-//{
-//  ms = max(ms, k_minServoPosMs);
-//  ms = min(ms, k_maxServoPosMs);
-//
-//  servo.ctrl.writeMicroseconds(ms);
-//  servo.posMs = ms;
-//}
 
 ///////////// BUTTON/LASER CODE /////////////
 
@@ -181,7 +148,6 @@ void setup() {
   
   Servo_init(&tilt, 8);
   Servo_init(&pan, 9);
-  //delay(300); //Give time for servos to go to positions
   
   Joystick_init(&joystick, A0, A1);
 
@@ -200,31 +166,21 @@ void loop() {
   
   Joystick_update(&joystick);
 
-  if (!Joystick_isInDeadband(&joystick, 'y')){
-      if (joystick.posY < 300 && tilt.position > 0) {
-        tilt.position--;
-      }
-      else if (joystick.posY > 800 && tilt.position < 180) {
-        tilt.position++;
-      }
-      tilt.ctrl.write(tilt.position);
-//    int nextTiltPos = tilt.posMs + (joystick.posY / 512.0f) * k_maxServoSpeed;
-//    Servo_updateposms(tilt, nextTiltPos);
-//    //Serial.println("Servo: " + (String) tilt.posMs);
+  if (joystick.posY < 300 && tilt.position > 0) {
+    tilt.position--;
   }
-//
-  if (!Joystick_isInDeadband(&joystick, 'x')){
-      if (joystick.posX < 300 && pan.position > 0) {
-        pan.position--;
-      }
-      else if (joystick.posX > 800 && pan.position < 180) {
-        pan.position++;
-      }
-      pan.ctrl.write(pan.position);
-//    int nextPanPos = pan.posMs + (joystick.posX / 512.0f) * k_maxServoSpeed;
-//    Servo_updateposms(pan, nextPanPos);
-//    //Serial.println("Servo: " + (String) pan.posMs);
+  else if (joystick.posY > 800 && tilt.position < 180) {
+    tilt.position++;
   }
+  tilt.ctrl.write(tilt.position);
+      
+  if (joystick.posX < 300 && pan.position > 0) {
+    pan.position--;
+  }
+  else if (joystick.posX > 800 && pan.position < 180) {
+    pan.position++;
+  }
+  pan.ctrl.write(pan.position);
 
   int photoresistor_value = analogRead(photoresistor);
   
