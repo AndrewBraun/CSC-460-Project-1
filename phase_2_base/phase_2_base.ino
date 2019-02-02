@@ -138,26 +138,35 @@ void read_photoresistor_task() {
 ///////////// BLUETOOTH CODE /////////////
 
 void write_to_bluetooth_task() {
+
+  char msgBuf[3];
   
-  Serial1.print("Servo x:" + determine_direction(servo_joystick.posX));
-  Serial1.print("Servo y:" + determine_direction(servo_joystick.posY));
-  Serial1.print("Roomba x:" + determine_direction(roomba_joystick.posX));
-  Serial1.print("Roomba y:" + determine_direction(roomba_joystick.posY));
-  Serial1.print("Laser:" + char(laser_ON));
-  
+  sprintf(msgBuf, "%02d ", determine_direction(servo_joystick.posX));
+  Serial.print(msgBuf);
+
+  sprintf(msgBuf, "%02d ", determine_direction(servo_joystick.posY));
+  Serial.print(msgBuf);
+
+  sprintf(msgBuf, "%02d ", determine_direction(roomba_joystick.posX));
+  Serial.print(msgBuf);
+
+  sprintf(msgBuf, "%02d ", determine_direction(roomba_joystick.posY));
+  Serial.print(msgBuf);
+
+  Serial.println(String(laser_ON));
 }
 
 /*
  * Takes as input a joystick value and returns which direction the servo/roomba should move.
  */
-char determine_direction (int value) {
-  char direction = 0;
+int determine_direction (int value) {
+  int direction = 0;
   
   if (value < 300) {
-    direction--;
+    direction = -1;
   }
   else if (value > 800) {
-    direction++;
+    direction = 1;
   }
 
   return direction;
@@ -175,6 +184,7 @@ void setup() {
   pinMode(photoresistor_pin, INPUT);
   pinMode(joystick_button_pin, INPUT_PULLUP);
 
+  Serial.begin(9600);
   Serial1.begin(9600);
 
   Scheduler_Init();
