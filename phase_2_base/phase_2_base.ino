@@ -120,7 +120,7 @@ void printInt(int integer) {
  * change the laser state.
  */
 void read_laser_button_task() {
-  int new_joystick_button_value = digitalRead(joystick_button_value);
+  int new_joystick_button_value = digitalRead(joystick_button_pin);
   
   if (!new_joystick_button_value && joystick_button_value){
     laser_ON = !laser_ON;
