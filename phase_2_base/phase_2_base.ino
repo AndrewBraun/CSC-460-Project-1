@@ -139,21 +139,16 @@ void read_photoresistor_task() {
 
 void write_to_bluetooth_task() {
 
-  char msgBuf[3];
+  char msgBuf[13];
+
+  sprintf(msgBuf, "%02d %02d %02d %02d %01d\n",
+    determine_direction(servo_joystick.posX),
+    determine_direction(servo_joystick.posY),
+    determine_direction(roomba_joystick.posX),
+    determine_direction(roomba_joystick.posY),
+    (int)laser_ON);
   
-  sprintf(msgBuf, "%02d ", determine_direction(servo_joystick.posX));
-  Serial.print(msgBuf);
-
-  sprintf(msgBuf, "%02d ", determine_direction(servo_joystick.posY));
-  Serial.print(msgBuf);
-
-  sprintf(msgBuf, "%02d ", determine_direction(roomba_joystick.posX));
-  Serial.print(msgBuf);
-
-  sprintf(msgBuf, "%02d ", determine_direction(roomba_joystick.posY));
-  Serial.print(msgBuf);
-
-  Serial.println(String(laser_ON));
+  Serial1.print(msgBuf);
 }
 
 /*
