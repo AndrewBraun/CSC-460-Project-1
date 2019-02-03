@@ -1,3 +1,4 @@
+#include "scheduler.h"
 #include <Servo.h>
 
 const int k_maxServoSpeed = 10;
@@ -46,7 +47,7 @@ struct BluetoothArgs_t {
   int roombaX;
   int roombaY;
   
-  bool laserEnable = 0;
+  bool laserEnable = false;
 };
 
 void Bluetooth_init()
@@ -76,7 +77,7 @@ void Task_updateBluetooth()
 
     char bytes[64];
     Serial1.readBytesUntil('\n', bytes, 64);
-    Serial.println("ServoX: " + (String)g_lastArgs.servoX + " ServoY: " + (String)g_lastArgs.servoY);
+    Serial.println("ServoX: " + (String)g_lastArgs.servoX + " ServoY: " + (String)g_lastArgs.servoY + " Laser: " + g_lastArgs.laserEnable);
   }
 }
 
@@ -92,16 +93,30 @@ void Task_updateServoTilt()
   Servo_update(&g_tiltServo, g_lastArgs.servoY);
 }
 
+void Task_updateLaser()
+{
+  if (g_lastArgs.laserEnable)
+    digitalWrite(13, HIGH);
+  else
+    digitalWrite(13, LOW);
+}
+
 ///////////// MAIN CODE /////////////
 
 void setup() {
+  Scheduler_Init();
+  
   Bluetooth_init();
   Servo_init(&g_panServo, 2);
   Servo_init(&g_tiltServo, 3);
+  pinMode(13, OUTPUT);
+
+  Scheduler_StartTask(0, 80, Task_updateServoPan);
+  Scheduler_StartTask(10, 80, Task_updateServoTilt);
+  Scheduler_StartTask(10, 80, Task_updateLaser);
+  Scheduler_StartTask(30, 80, Task_updateBluetooth);
 }
 
 void loop() {
-  Task_updateBluetooth();
-  Task_updateServoPan();
-  Task_updateServoTilt();
+  Scheduler_Dispatch();
 }
