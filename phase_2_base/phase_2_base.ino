@@ -43,13 +43,21 @@ void Joystick_init(struct Joystick_t* joy, int pinX, int pinY)
  * Update joystick values using exponential averaging.
  */
 void servo_joystick_update_task(){
+  digitalWrite(22, HIGH);
+  
   servo_joystick.posX = (1 - k_joystickAlpha) * analogRead(servo_joystick.pinX) + k_joystickAlpha * servo_joystick.posX;
   servo_joystick.posY = (1 - k_joystickAlpha) * analogRead(servo_joystick.pinY) + k_joystickAlpha * servo_joystick.posY;
+
+  digitalWrite(22, LOW);
 }
 
 void roomba_joystick_update_task(){
+  digitalWrite(24, HIGH);
+  
   roomba_joystick.posX =(1 - k_joystickAlpha) * analogRead(roomba_joystick.pinX) + k_joystickAlpha * roomba_joystick.posX;
   roomba_joystick.posY = (1 - k_joystickAlpha) * analogRead(roomba_joystick.pinY) + k_joystickAlpha * roomba_joystick.posY;
+
+  digitalWrite(24, LOW);
 }
 
 ///////////// LCD Code /////////////
@@ -60,6 +68,7 @@ LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
  * Initalize the LCD
  */
 void lcd_setup() {
+  
   lcd.begin(20,4);
   lcd.backlight();
   lcd.clear();
@@ -82,6 +91,8 @@ void lcd_setup() {
  * the joystick button's value
  */
 void write_to_lcd_task() {
+
+  digitalWrite(26, HIGH);
   
   lcd.setCursor(14,0);
   printInt(photoresistor_value);
@@ -94,6 +105,8 @@ void write_to_lcd_task() {
 
   lcd.setCursor(16,3);
   lcd.print(joystick_button_value);
+
+  digitalWrite(26, LOW);
 }
 
 /*
@@ -120,6 +133,9 @@ void printInt(int integer) {
  * change the laser state.
  */
 void read_laser_button_task() {
+
+  digitalWrite(28, HIGH);
+  
   int new_joystick_button_value = digitalRead(joystick_button_pin);
   
   if (!new_joystick_button_value && joystick_button_value){
@@ -127,18 +143,26 @@ void read_laser_button_task() {
   }
   
   joystick_button_value = new_joystick_button_value;
+
+  digitalWrite(28, LOW);
 }
 
 ///////////// PHOTORESISTOR CODE /////////////
 
 void read_photoresistor_task() {
+  digitalWrite(30, HIGH);
+  
   photoresistor_value = analogRead(photoresistor_pin);
+
+  digitalWrite(30, LOW);
 }
 
 ///////////// BLUETOOTH CODE /////////////
 
 void write_to_bluetooth_task() {
 
+  digitalWrite(32, HIGH);
+  
   char msgBuf[13];
 
   sprintf(msgBuf, "%02d %02d %02d %02d %01d\n",
@@ -149,6 +173,8 @@ void write_to_bluetooth_task() {
     (int)laser_ON);
   
   Serial1.print(msgBuf);
+
+  digitalWrite(32, LOW);
 }
 
 /*
@@ -182,6 +208,13 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
 
+  pinMode(22, OUTPUT);
+  pinMode(24, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(28, OUTPUT);
+  pinMode(30, OUTPUT);
+  pinMode(32, OUTPUT);
+
   Scheduler_Init();
 
   Scheduler_StartTask(0, 20, servo_joystick_update_task);
@@ -189,7 +222,7 @@ void setup() {
   Scheduler_StartTask(5, 10, read_photoresistor_task);
   Scheduler_StartTask(15, 10, read_laser_button_task);
   Scheduler_StartTask(50, 250, write_to_lcd_task);
-  Scheduler_StartTask(25, 80, write_to_bluetooth_task);
+  Scheduler_StartTask(25, 200, write_to_bluetooth_task);
 }
 
 void loop() {
