@@ -67,17 +67,20 @@ void Task_updateBluetooth()
 {
   // Message format (13 chars)
   // 00 00 00 00 0
+
+  String msg = Serial1.readStringUntil('\n');
+  
+  sscanf(msg.c_str(), "%02d %02d %02d %02d %d",
+    &g_lastArgs.servoX,
+    &g_lastArgs.servoY,
+    &g_lastArgs.roombaX,
+    &g_lastArgs.roombaY,
+    &g_lastArgs.laserEnable);
+
+  // Flush the stream if we're falling behind
   if (Serial1.available() >= 14)
   {
-    g_lastArgs.servoX = Serial1.parseInt();
-    g_lastArgs.servoY = Serial1.parseInt();
-    g_lastArgs.roombaX = Serial1.parseInt();
-    g_lastArgs.roombaY = Serial1.parseInt();
-    g_lastArgs.laserEnable = Serial1.parseInt() == 0 ? false : true;
-
-    char bytes[64];
-    Serial1.readBytesUntil('\n', bytes, 64);
-    Serial.println("ServoX: " + (String)g_lastArgs.servoX + " ServoY: " + (String)g_lastArgs.servoY + " Laser: " + g_lastArgs.laserEnable);
+    Serial1.flush();
   }
 }
 
@@ -90,7 +93,7 @@ void Task_updateServoPan()
 void Task_updateServoTilt()
 {
   int nextPos = g_tiltServo.position + g_lastArgs.servoY;
-  Servo_update(&g_tiltServo, g_lastArgs.servoY);
+  Servo_update(&g_tiltServo, nextPos);
 }
 
 void Task_updateLaser()
@@ -113,7 +116,7 @@ void setup() {
 
   Scheduler_StartTask(0, 80, Task_updateServoPan);
   Scheduler_StartTask(10, 80, Task_updateServoTilt);
-  Scheduler_StartTask(10, 80, Task_updateLaser);
+  Scheduler_StartTask(20, 80, Task_updateLaser);
   Scheduler_StartTask(30, 80, Task_updateBluetooth);
 }
 
