@@ -68,6 +68,8 @@ void Task_updateBluetooth()
   // Message format (13 chars)
   // 00 00 00 00 0
 
+  digitalWrite(28, HIGH);
+
   String msg = Serial1.readStringUntil('\n');
   
   sscanf(msg.c_str(), "%02d %02d %02d %02d %d",
@@ -82,26 +84,40 @@ void Task_updateBluetooth()
   {
     Serial1.flush();
   }
+
+  digitalWrite(28, LOW);
 }
 
 void Task_updateServoPan()
 {
+  digitalWrite(22, HIGH);
+  
   int nextPos = g_panServo.position + g_lastArgs.servoX;
   Servo_update(&g_panServo, nextPos);
+
+  digitalWrite(22, LOW);
 }
 
 void Task_updateServoTilt()
 {
+  digitalWrite(24, HIGH);
+  
   int nextPos = g_tiltServo.position + g_lastArgs.servoY;
   Servo_update(&g_tiltServo, nextPos);
+
+  digitalWrite(24, LOW);
 }
 
 void Task_updateLaser()
 {
+  digitalWrite(26, HIGH);
+  
   if (g_lastArgs.laserEnable)
     digitalWrite(13, HIGH);
   else
     digitalWrite(13, LOW);
+
+  digitalWrite(26, LOW);
 }
 
 ///////////// MAIN CODE /////////////
@@ -114,10 +130,16 @@ void setup() {
   Servo_init(&g_tiltServo, 3);
   pinMode(13, OUTPUT);
 
-  Scheduler_StartTask(0, 80, Task_updateServoPan);
-  Scheduler_StartTask(10, 80, Task_updateServoTilt);
-  Scheduler_StartTask(20, 80, Task_updateLaser);
-  Scheduler_StartTask(30, 80, Task_updateBluetooth);
+  // Setup debug pins
+  pinMode(22, OUTPUT);  // updateServoPan
+  pinMode(24, OUTPUT);  // updateServoTilt
+  pinMode(26, OUTPUT);  // updateLaser
+  pinMode(28, OUTPUT);  // updateBluetooth
+
+  Scheduler_StartTask(0, 200, Task_updateServoPan);
+  Scheduler_StartTask(2, 200, Task_updateServoTilt);
+  Scheduler_StartTask(4, 200, Task_updateLaser);
+  Scheduler_StartTask(6, 200, Task_updateBluetooth);
 }
 
 void loop() {
